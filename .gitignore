@@ -12,10 +12,6 @@ venv/
 .env/
 env/
 
-# Diretórios de código temporário / usuário
-user_code/
-results/
-
 # Binaries ESBMC
 windows-release/
 linux-release/
