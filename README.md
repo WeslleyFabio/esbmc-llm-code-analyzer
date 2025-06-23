@@ -120,6 +120,10 @@ Cole seu código C e clique em **"Analisar Código"**.
 
 ---
 
+## 📊 Arquitetura do Sistema
+
+![Arquitetura do sistema](static/images/architecture.png)
+
 ## ⚠️ Importante: Licenciamento e Uso do ESBMC
 
 Este projeto **não contém o código-fonte nem os binários do ESBMC**.
