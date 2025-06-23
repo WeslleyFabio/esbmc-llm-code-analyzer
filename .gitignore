@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# FastAPI / Uvicorn
+.env
+
+# Virtual Environments
+venv/
+.env/
+env/
+
+# Diretórios de código temporário / usuário
+user_code/
+results/
+
+# Binaries ESBMC
+windows-release/
+linux-release/
+
+# IDEs / Editores
+.vscode/
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
