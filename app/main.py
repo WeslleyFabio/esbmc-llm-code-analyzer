@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -23,10 +23,17 @@ def wrap_long_lines(log_text, max_length=120):
 
 
 @app.post("/analyze/")
-async def analyze_code(code: str = Form(...)):
+async def analyze_code(code: str = Form(None), file: UploadFile = File(None)):
+    # Se o usuário enviou um arquivo, lê o conteúdo dele
+    if file:
+        code_content = (await file.read()).decode("utf-8")
+    else:
+        code_content = code
+
+    # Salva o código C recebido (do textarea ou do arquivo)
     user_code_path = os.path.join("user_code", "user_code.c")
-    with open(user_code_path, "w") as f:
-        f.write(code)
+    with open(user_code_path, "w", encoding="utf-8") as f:
+        f.write(code_content)
 
     esbmc_output = run_esbmc(user_code_path)
     cleaned_log = clean_esbmc_log(esbmc_output)
@@ -76,11 +83,15 @@ async def frontend():
         <div class="container">
             <h2>🔍 Análise de Segurança de Código C com ESBMC e LLM</h2>
             <textarea id="code" placeholder="Cole aqui seu código C..."></textarea>
+            <br>
+            
             <div class="button-group">
+            <input type="file" id="fileInput" accept=".c"><br><br>
                 <button onclick="analyze()">▶️ Analisar Código</button>
                 <button onclick="toggleLog()">📝 Ver Log ESBMC</button>
                 <button onclick="download()">⬇️ Baixar Resultado</button>
             </div>            
+
             <pre id="esbmc_log"></pre>            
             <div id="response"></div>
         </div>
@@ -88,9 +99,15 @@ async def frontend():
         <script>
             async function analyze() {
                 document.getElementById('response').innerText = '⏳ Analisando...';
-                const code = document.getElementById('code').value;
+                const textareaCode = document.getElementById('code').value;
+                const fileInput = document.getElementById('fileInput').files[0];
+
                 const formData = new FormData();
-                formData.append('code', code);
+                if (fileInput) {
+                    formData.append('file', fileInput);
+                } else {
+                    formData.append('code', textareaCode);
+                }
 
                 try {
                     const res = await fetch('/analyze/', {
