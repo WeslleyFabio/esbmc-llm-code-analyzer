@@ -5,6 +5,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+USE_MOCK_LLM = os.getenv("USE_MOCK_LLM", "False") == "True"
+
+
+def get_llm_response(parsed_output):
+    if USE_MOCK_LLM:
+        # Retorno fake para testes
+        return f"(MOCK) Interpretação gerada localmente para: {parsed_output}"
 
 
 def clean_llm_output(response_text):
@@ -25,18 +32,22 @@ def clean_llm_output(response_text):
 
 
 def get_llm_response(parsed_output):
+    if USE_MOCK_LLM:
+        # Retorno fake para testes
+        return f"(MOCK) Interpretação gerada localmente para: {parsed_output}"
+
     if not HUGGINGFACE_API_KEY:
         return "Erro: API Key da Hugging Face não encontrada. Verifique o arquivo .env."
 
     api_url = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
 
     prompt = f"""
-Resumo da análise de código C feita pelo ESBMC:
+        Resumo da análise de código C feita pelo ESBMC:
 
-{parsed_output}
+        {parsed_output}
 
-Explique de forma breve (até 10 linhas) qual o problema encontrado, o tipo de vulnerabilidade, e sugira como corrigir. Responda em português.
-"""
+        Explique de forma breve (até 10 linhas) qual o problema encontrado, o tipo de vulnerabilidade, e sugira como corrigir. Responda em português.
+        """
 
     headers = {
         "Authorization": f"Bearer {HUGGINGFACE_API_KEY}"
