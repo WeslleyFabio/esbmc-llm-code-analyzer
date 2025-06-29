@@ -1,42 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 
-int shared_resource = 0;
-pthread_mutex_t lock;
+int main() {
+    // 1. Null pointer exception
+    int *ptr = NULL;
+    *ptr = 42;  // Erro: tentativa de acessar ponteiro nulo
 
-void *thread_func(void *arg)
-{
-    pthread_mutex_lock(&lock);
-    shared_resource++;
-    pthread_mutex_lock(&lock); // Deadlock proposital
-    pthread_mutex_unlock(&lock);
-    pthread_mutex_unlock(&lock);
-    return NULL;
-}
+    // 2. Buffer overflow
+    char buffer[10];
+    for (int i = 0; i <= 10; i++) {  // i vai de 0 até 10 (11 posições)
+        buffer[i] = 'A';  // Erro: buffer tem apenas 10 posições (0 a 9)
+    }
 
-int main()
-{
-    // ===== Integer Overflow =====
-    unsigned char overflow_var = 250;
-    overflow_var += 10; // Provoca overflow de inteiro
-    printf("Resultado do Overflow: %d\\n", overflow_var);
+    // 3. Array out of bounds
+    int arr[5] = {1, 2, 3, 4, 5};
+    int index = 6;
+    int value = arr[index];  // Erro: índice fora dos limites do array
 
-    // ===== Memory Leak =====
-    int *leak = malloc(10 * sizeof(int));
-    leak[0] = 42;
-    // Intencionalmente não damos free()
-
-    // ===== Array Out of Bounds =====
-    int arr[5];
-    arr[10] = 123; // Acesso fora dos limites do array
-
-    // ===== Deadlock =====
-    pthread_t t1;
-    pthread_mutex_init(&lock, NULL);
-    pthread_create(&t1, NULL, thread_func, NULL);
-    pthread_join(t1, NULL);
-    pthread_mutex_destroy(&lock);
-
+    printf("Valor acessado: %d\n", value);
     return 0;
 }

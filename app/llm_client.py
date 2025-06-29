@@ -46,7 +46,7 @@ def get_llm_response(parsed_output):
 
         {parsed_output}
 
-        Explique de forma breve (até 10 linhas) qual o problema encontrado, o tipo de vulnerabilidade, e sugira como corrigir. Responda em português.
+        Explique de forma breve (máximo 300 caracteres) qual o problema encontrado, o tipo de vulnerabilidade. Forneça o código corrigido. Responda em português.
         """
 
     headers = {
@@ -56,7 +56,7 @@ def get_llm_response(parsed_output):
     payload = {
         "inputs": prompt,
         "parameters": {
-            "max_new_tokens": 300,
+            "max_new_tokens": 1000,
             "temperature": 0.2
         }
     }

@@ -12,19 +12,26 @@ def windows_path_to_wsl_path(windows_path):
     return wsl_path
 
 
-def run_esbmc(file_path):
+def run_esbmc(file_path, options=None):
     """
     Executa o ESBMC no WSL usando o caminho do código C salvo no Windows.
     """
+    import subprocess
+    import os
+
+    if options is None:
+        options = []
+
     try:
         # Converte o caminho do arquivo C (Windows) para o path WSL
         wsl_input_path = windows_path_to_wsl_path(os.path.abspath(file_path))
 
         # Caminho absoluto para o esbmc no WSL
-        esbmc_path_wsl = "/home/weslley/linux-release/bin/esbmc"
+        esbmc_path_wsl = "/home/rafael/esbmc/build/src/esbmc/esbmc"
 
         # Comando final que será executado dentro do WSL
-        command = ["wsl", esbmc_path_wsl, wsl_input_path]
+        command = ["wsl", esbmc_path_wsl, wsl_input_path] + options
+        # command = ["wsl", esbmc_path_wsl, wsl_input_path]
 
         print(f"Executando comando: {' '.join(command)}")  # Log para depuração
 
