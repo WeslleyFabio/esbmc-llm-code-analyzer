@@ -90,9 +90,9 @@ HUGGINGFACE_API_KEY=YOUR_HUGGINGFACE_API_KEY
 
 ### 4. Configurar o caminho do ESBMC (exemplo):
 
-No arquivo `esbmc_runner.py`, edite a variável `ESBMC_PATH` para apontar para o seu executável ESBMC no WSL/Linux.
+No arquivo `esbmc_runner.py`, edite a variável `ESBMC_PATH` para apontar para o executável do ESBMC dentro do WSL ou do Linux nativo.
 
-Exemplo:
+**Exemplo de caminho correto no WSL ou Linux:**
 
 ```python
 ESBMC_PATH = "/home/seu_usuario/linux-release/bin/esbmc"
