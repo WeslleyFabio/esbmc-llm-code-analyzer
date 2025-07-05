@@ -13,8 +13,6 @@ load_dotenv()
 
 app = FastAPI()
 
-# Definição do diretório base, fora das funções para que seja acessível globalmente na aplicação
-# Isso aponta para C:\repo\esbmc-llm-code-analyzer\
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -241,6 +239,13 @@ async def frontend():
                                     <label for="multi-property">
                                         <div class="property-label">Multi Property</div>
                                         <div class="property-description">Verifica múltiplas propriedades</div>
+                                    </label>
+                                </div>
+                                <div class="property-item">
+                                    <input type="checkbox" id="compact-trace" name="properties" value="--compact-trace">
+                                    <label for="compact-trace">
+                                        <div class="property-label">Compact Trace</div>
+                                        <div class="property-description">Traz todos os contraexemplos do --multi-property</div>
                                     </label>
                                 </div>
                                 <div class="property-item">

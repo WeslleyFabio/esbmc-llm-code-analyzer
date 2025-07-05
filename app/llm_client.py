@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Defina a API_URL e os headers globalmente aqui, como no seu exemplo
+
 API_URL = "https://router.huggingface.co/together/v1/chat/completions"
 headers = {
     "Authorization": f"Bearer {os.environ.get('HUGGINGFACE_API_KEY')}",
@@ -60,7 +60,7 @@ def get_llm_response(user_code, parsed_output): # Adapte esta função para rece
         Código Corrigido: Forneça o código C completo ou trecho corrigido em bloco ```c.
         Explicação da Correção: Explique brevemente o que e por que foi corrigido.
 
-        Formate sua resposta usando exatamente estas seções.
+        Formate sua resposta usando exatamente estas seções e envie os trechos errados do codigo corrigidos.
         """
 
     payload = {
@@ -69,7 +69,7 @@ def get_llm_response(user_code, parsed_output): # Adapte esta função para rece
         ],
         "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
         "temperature": 0.2,
-        "max_tokens": 10000 
+        "max_tokens": 20000 
     }
 
     try:
