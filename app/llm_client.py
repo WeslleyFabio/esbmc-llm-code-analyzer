@@ -4,19 +4,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+# Defina a API_URL e os headers globalmente aqui, como no seu exemplo
+API_URL = "https://router.huggingface.co/together/v1/chat/completions"
+headers = {
+    "Authorization": f"Bearer {os.environ.get('HUGGINGFACE_API_KEY')}",
+    "Content-Type": "application/json"
+}
+
+# Use o modelo Mixtral que você está testando e que funcionou via Together AI
+# Mantenha o USE_MOCK_LLM para testes locais
 USE_MOCK_LLM = os.getenv("USE_MOCK_LLM", "False") == "True"
 
-
-def get_llm_response(parsed_output):
-    if USE_MOCK_LLM:
-        # Retorno fake para testes
-        return f"(MOCK) Interpretação gerada localmente para: {parsed_output}"
-
+# --- Funções Auxiliares (mantidas como antes, mas aqui no contexto completo do arquivo) ---
 
 def clean_llm_output(response_text):
     """
-    Remove o eco do prompt da resposta da Hugging Face.
+    Remove o eco do prompt da resposta da Hugging Face/Together AI.
     Mantém apenas o que vier depois da frase final do prompt: 'Responda em português.'
     """
     marker = "Responda em português."
@@ -24,55 +27,66 @@ def clean_llm_output(response_text):
     if split_point != -1:
         return response_text[split_point + len(marker):].strip()
     else:
-        # Se não encontrar o marcador, devolve só as últimas 10 linhas como fallback
+        # Se não encontrar o marcador, devolve as últimas 10 linhas como fallback
         lines = response_text.strip().splitlines()
         if len(lines) > 10:
             return "\n".join(lines[-10:])
         return response_text.strip()
 
 
-def get_llm_response(parsed_output):
+def get_llm_response(user_code, parsed_output): # Adapte esta função para receber o código do usuário
     if USE_MOCK_LLM:
         # Retorno fake para testes
         return f"(MOCK) Interpretação gerada localmente para: {parsed_output}"
 
-    if not HUGGINGFACE_API_KEY:
-        return "Erro: API Key da Hugging Face não encontrada. Verifique o arquivo .env."
+    # Verificação da chave de API
+    if not os.environ.get("HUGGINGFACE_API_KEY"):
+        return "Erro: API Key da Hugging Face/Together AI não encontrada. Verifique o arquivo .env."
 
-    api_url = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
+    prompt_content = f"""
+        Código C:
+        ```c
+        {user_code}
+        ```
 
-    prompt = f"""
-        Resumo da análise de código C feita pelo ESBMC:
-
+        Análise do verificador de erros:
+        ```text
         {parsed_output}
+        ```
 
-        Explique de forma breve (máximo 300 caracteres) qual o problema encontrado, o tipo de vulnerabilidade. Forneça o código corrigido. Responda em português.
+        Com base no código e análise, siga estas instruções (em português, concisamente):
+
+        Problema Identificado: Descreva o problema e tipo de vulnerabilidade.
+        Código Corrigido: Forneça o código C completo ou trecho corrigido em bloco ```c.
+        Explicação da Correção: Explique brevemente o que e por que foi corrigido.
+
+        Formate sua resposta usando exatamente estas seções.
         """
 
-    headers = {
-        "Authorization": f"Bearer {HUGGINGFACE_API_KEY}"
-    }
-
     payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 1000,
-            "temperature": 0.2
-        }
+        "messages": [
+            {"role": "user", "content": prompt_content}
+        ],
+        "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+        "temperature": 0.2,
+        "max_tokens": 10000 
     }
 
     try:
-        response = requests.post(
-            api_url, headers=headers, json=payload, timeout=120)
-        response.raise_for_status()
+        response = requests.post(API_URL, headers=headers, json=payload, timeout=120)
+        response.raise_for_status() 
         result = response.json()
 
-        if isinstance(result, list) and "generated_text" in result[0]:
-            result_text = result[0]["generated_text"]
+        if "choices" in result and len(result["choices"]) > 0 and "message" in result["choices"][0]:
+            result_text = result["choices"][0]["message"]["content"] # Acessa o 'content' dentro de 'message'
             clean_text = clean_llm_output(result_text)
             return clean_text
         else:
-            return str(result)
+            return f"Resposta inesperada da API: {result}"
 
+    except requests.exceptions.Timeout:
+        return "Erro: A requisição para a API da Hugging Face/Together AI excedeu o tempo limite (Timeout)."
+    except requests.exceptions.RequestException as e:
+        return f"Erro ao consultar a API Hugging Face/Together AI: {e}"
     except Exception as e:
-        return f"Erro ao consultar a API Hugging Face: {str(e)}"
+        return f"Ocorreu um erro inesperado na chamada da LLM: {e}"
